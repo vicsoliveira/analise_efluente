@@ -63,7 +63,12 @@ def read_and_organize_data(file):
         data_frames.append(sub_df)
 
     # Concatenar todos os DataFrames processados
-    df = pd.concat(data_frames, ignore_index=True)
+    if data_frames:
+        df = pd.concat(data_frames, ignore_index=True)
+    else:
+        st.error("Nenhum dado válido encontrado para processamento.")
+        return None
+
     return df
 
 # Função para analisar a evolução temporal dos resultados dos efluentes tratados
