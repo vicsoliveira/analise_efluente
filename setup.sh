@@ -1,7 +1,9 @@
-#!/bin/bash
+mkdir -p ~/.streamlit/
 
-# Atualizar o pip
-python -m pip install --upgrade pip
-
-# Instalar dependências
-pip install -r requirements.txt
+echo "\
+[server]\n\
+headless = true\n\
+port = $PORT\n\
+enableCORS = false\n\
+\n\
+" > ~/.streamlit/config.toml
