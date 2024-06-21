@@ -23,18 +23,18 @@ def read_and_organize_data(file):
     st.write(df.head(20))
 
     # Procurar todas as linhas onde os dados realmente começam
-    start_rows = df[df.iloc[:, 0].str.contains('Parâmetro', na=False)].index.tolist()
+    start_rows = df[df.iloc[:, 1].str.contains('Coleta', na=False)].index.tolist()
 
     data_frames = []
     for start_row in start_rows:
         # Identificar a linha onde os dados começam
-        coleta = df.iloc[start_row - 3, 1]
-        elaboracao = df.iloc[start_row - 2, 1]
-        nbr = df.iloc[start_row - 1, 1]
-        amostra = df.iloc[start_row + 1, 1]
+        coleta = df.iloc[start_row + 1, 2]
+        elaboracao = df.iloc[start_row + 2, 2]
+        nbr = df.iloc[start_row + 3, 2]
+        amostra = df.iloc[start_row + 4, 2]
 
         # Recarregar os dados a partir da linha correta
-        sub_df = df.iloc[start_row + 1:start_row + 11].reset_index(drop=True)  # Ajustar conforme necessário
+        sub_df = df.iloc[start_row + 5:start_row + 11].reset_index(drop=True)  # Ajustar conforme necessário
         st.write(f"Colunas do DataFrame após ajuste (início na linha {start_row}):")
         st.write(sub_df)
 
