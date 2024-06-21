@@ -37,6 +37,9 @@ def process_efluente_data(df):
     return pd.DataFrame(records)
 
 def calculate_changes(df):
+    # Exclude "Efluente Bruto" records
+    df = df[df['Tipo de Amostra'] != 'Efluente Bruto']
+    
     df['Data'] = pd.to_datetime(df['Data'])
     df['Valor Obtido'] = pd.to_numeric(df['Valor Obtido'], errors='coerce')
     grouped = df.groupby('Parâmetro')
