@@ -102,11 +102,18 @@ def analyze_treatment_quality(df):
 
         if not raw.empty and not treated.empty:
             merged = pd.merge(raw, treated, on=['Coleta', 'Parâmetro'], suffixes=('_Bruto', '_Tratado'))
-            merged['Diferença'] = merged['Valor obtido_Bruto'] - merged['Valor obtido_Tratado']
-            quality_analysis.append(merged[['Coleta', 'Amostra_Bruto', 'Parâmetro', 'Valor obtido_Bruto', 'Valor obtido_Tratado', 'Diferença']])
+            if not merged.empty:
+                merged['Diferença'] = merged['Valor obtido_Bruto'] - merged['Valor obtido_Tratado']
+                quality_analysis.append(merged[['Coleta', 'Amostra_Bruto', 'Parâmetro', 'Valor obtido_Bruto', 'Valor obtido_Tratado', 'Diferença']])
+            else:
+                st.warning(f"Não há dados combinados para o parâmetro {parameter}")
 
-    quality_df = pd.concat(quality_analysis)
-    return quality_df
+    if quality_analysis:
+        quality_df = pd.concat(quality_analysis)
+        return quality_df
+    else:
+        st.error("Nenhum dado de qualidade de tratamento encontrado.")
+        return None
 
 # Função principal para executar as análises e gerar o arquivo para download
 def main():
@@ -130,15 +137,16 @@ def main():
 
             st.subheader("Análise da Qualidade do Tratamento")
             quality_df = analyze_treatment_quality(df)
-            st.write(quality_df)
+            if quality_df is not None:
+                st.write(quality_df)
 
-            csv = quality_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Baixar Análise da Qualidade do Tratamento",
-                data=csv,
-                file_name='analise_qualidade_tratamento.csv',
-                mime='text/csv',
-            )
+                csv = quality_df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Baixar Análise da Qualidade do Tratamento",
+                    data=csv,
+                    file_name='analise_qualidade_tratamento.csv',
+                    mime='text/csv',
+                )
 
 if __name__ == "__main__":
     main()
