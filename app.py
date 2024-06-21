@@ -29,11 +29,12 @@ if uploaded_file is not None:
         df = data[sheet_name]
 
         # Verifica se a planilha contém os parâmetros da NBR 16783
-        if 'Parâmetro' in df.columns and 'Resultado' in df.columns and 'Padrão NBR 16783' in df.columns:
-            df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
-            df_nbr = pd.concat([df_nbr, df])
-        else:
-            df_no_nbr = pd.concat([df_no_nbr, df])
+        if 'Parâmetro' in df.columns and 'Resultado' in df.columns:
+            if 'Padrão NBR 16783' in df.columns:
+                df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
+                df_nbr = pd.concat([df_nbr, df])
+            else:
+                df_no_nbr = pd.concat([df_no_nbr, df])
 
         st.write(df)
 
