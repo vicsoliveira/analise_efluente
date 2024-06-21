@@ -80,15 +80,15 @@ def plot_changes(df):
     data_final = df['Data Final']
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(parameters, percentages, marker='o')
+    bars = ax.bar(parameters, percentages, color='skyblue')
 
-    for i in range(len(df)):
-        ax.annotate(f'Inicial: {valores_iniciais.iloc[i]:.2f}\nFinal: {valores_finais.iloc[i]:.2f}', 
-                    (i, percentages.iloc[i]), 
+    for bar, inicial, final in zip(bars, valores_iniciais, valores_finais):
+        height = bar.get_height()
+        ax.annotate(f'Inicial: {inicial:.2f}\nFinal: {final:.2f}', 
+                    xy=(bar.get_x() + bar.get_width() / 2, height), 
+                    xytext=(0, 3),  # 3 points vertical offset
                     textcoords="offset points", 
-                    xytext=(0,10), 
-                    ha='center',
-                    fontsize=8)
+                    ha='center', va='bottom', fontsize=8)
 
     plt.xticks(rotation=45, ha='right')
     plt.ylabel('Mudança (%)')
