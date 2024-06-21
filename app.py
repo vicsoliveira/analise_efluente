@@ -17,36 +17,46 @@ def load_gitignore():
 
 # Função para ler e organizar os dados
 def read_and_organize_data(file):
-    # Carregar os dados do Excel, ignorando as três primeiras linhas
-    df = pd.read_excel(file, skiprows=3)
+    # Carregar os dados do Excel e exibir as primeiras linhas para depuração
+    df = pd.read_excel(file)
+    st.write("Primeiras linhas do DataFrame após leitura:")
+    st.write(df.head(10))
 
-    # Exibir as colunas para depuração
-    st.write("Colunas do DataFrame após leitura:")
-    st.write(df.columns)
+    # Procurar a linha onde os dados realmente começam
+    start_row = None
+    for i, row in df.iterrows():
+        if "Parâmetro" in row.values:
+            start_row = i
+            break
 
-    # Ajustar os nomes das colunas conforme necessário
-    if len(df.columns) >= 10:
+    if start_row is not None:
+        # Recarregar os dados a partir da linha correta
+        df = pd.read_excel(file, skiprows=start_row + 1)
+        st.write("Colunas do DataFrame após ajuste:")
+        st.write(df.columns)
+
+        # Ajustar os nomes das colunas
         df.columns = ["Coleta", "Elaboração do Laudo", "NBR", "Amostra", "Parâmetro", 
                       "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
-    else:
-        st.error("O número de colunas no arquivo não corresponde ao esperado.")
-        return None
 
-    # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
-    try:
-        df['Coleta'] = pd.to_datetime(df['Coleta'], format='%d/%m/%Y')
-    except ValueError:
+        # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
         try:
-            df['Coleta'] = pd.to_datetime(df['Coleta'], format='%Y-%m-%d')
+            df['Coleta'] = pd.to_datetime(df['Coleta'], format='%d/%m/%Y')
         except ValueError:
-            df['Coleta'] = pd.to_datetime(df['Coleta'], errors='coerce')
+            try:
+                df['Coleta'] = pd.to_datetime(df['Coleta'], format='%Y-%m-%d')
+            except ValueError:
+                df['Coleta'] = pd.to_datetime(df['Coleta'], errors='coerce')
 
-    # Verificar se há datas não convertidas
-    if df['Coleta'].isnull().any():
-        st.warning("Algumas datas na coluna 'Coleta' não puderam ser convertidas e foram definidas como NaT.")
+        # Verificar se há datas não convertidas
+        if df['Coleta'].isnull().any():
+            st.warning("Algumas datas na coluna 'Coleta' não puderam ser convertidas e foram definidas como NaT.")
 
-    df.sort_values(by='Coleta', inplace=True)
-    return df
+        df.sort_values(by='Coleta', inplace=True)
+        return df
+    else:
+        st.error("Não foi possível encontrar a linha de início dos dados.")
+        return None
 
 # Função para analisar a evolução temporal dos resultados dos efluentes tratados
 def analyze_temporal_evolution(df):
