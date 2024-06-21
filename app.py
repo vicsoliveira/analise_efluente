@@ -36,64 +36,78 @@ def process_efluente_data(df):
 
     return pd.DataFrame(records)
 
-def calculate_percentage_changes(df):
+def calculate_changes(df):
     df['Data'] = pd.to_datetime(df['Data'])
     df['Valor Obtido'] = pd.to_numeric(df['Valor Obtido'], errors='coerce')
     grouped = df.groupby('Parâmetro')
 
-    percentage_changes = {}
+    changes = []
 
     for name, group in grouped:
         group = group.sort_values(by='Data')
-        first_value = group['Valor Obtido'].iloc[0]
-        last_value = group['Valor Obtido'].iloc[-1]
-        if pd.notna(first_value) and pd.notna(last_value) and first_value != 0:
-            change = ((last_value - first_value) / abs(first_value)) * 100
-            percentage_changes[name] = change
+        if len(group) > 1:
+            first_row = group.iloc[0]
+            last_row = group.iloc[-1]
+            if pd.notna(first_row['Valor Obtido']) and pd.notna(last_row['Valor Obtido']):
+                change = {
+                    'Parâmetro': name,
+                    'Data Inicial': first_row['Data'].date(),
+                    'Data Final': last_row['Data'].date(),
+                    'Valor Inicial': first_row['Valor Obtido'],
+                    'Valor Final': last_row['Valor Obtido'],
+                    'Mudança (%)': ((last_row['Valor Obtido'] - first_row['Valor Obtido']) / abs(first_row['Valor Obtido'])) * 100
+                }
+                changes.append(change)
 
-    return percentage_changes
+    return pd.DataFrame(changes)
 
-def plot_percentage_changes(changes):
-    if not changes:
+def plot_changes(df):
+    if df.empty:
         st.write("No valid data to plot.")
         return
 
-    changes = dict(sorted(changes.items(), key=lambda item: abs(item[1]), reverse=True)[:10])  # Take top 10 changes
-    parameters = list(changes.keys())
-    percentages = list(changes.values())
+    df = df.sort_values(by='Mudança (%)', key=abs, ascending=False).head(10)  # Take top 10 changes
+    parameters = df['Parâmetro']
+    percentages = df['Mudança (%)']
+    data_inicial = df['Data Inicial']
+    data_final = df['Data Final']
 
     fig, ax = plt.subplots()
     ax.plot(parameters, percentages, marker='o')
 
     for i, txt in enumerate(percentages):
-        ax.annotate(f'{txt:.2f}%', (parameters[i], percentages[i]), textcoords="offset points", xytext=(0,10), ha='center')
+        ax.annotate(f'{txt:.2f}% ({data_inicial.iloc[i]} to {data_final.iloc[i]})', 
+                    (parameters.iloc[i], percentages.iloc[i]), 
+                    textcoords="offset points", 
+                    xytext=(0,10), 
+                    ha='center')
 
     plt.xticks(rotation=45)
-    plt.ylabel('Percentage Change')
-    plt.title('Top 10 Parameter Changes (%)')
+    plt.ylabel('Mudança (%)')
+    plt.title('Top 10 Mudanças nos Parâmetros (%)')
     plt.grid(True)
     st.pyplot(fig)
 
 st.title("Efluente Data Processor")
 
-uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
+uploaded_file = st.file_uploader("Escolha um arquivo Excel", type="xlsx")
 
 if uploaded_file is not None:
     df = pd.read_excel(uploaded_file, header=None)
     processed_df = process_efluente_data(df)
     
-    st.write("Processed Data:")
+    st.write("Dados Processados:")
     st.dataframe(processed_df)
 
-    percentage_changes = calculate_percentage_changes(processed_df)
+    changes_df = calculate_changes(processed_df)
 
-    st.write("Top Parameter Changes:")
-    plot_percentage_changes(percentage_changes)
+    st.write("Top Mudanças nos Parâmetros:")
+    plot_changes(changes_df)
 
     # Provide download option for the processed data
     st.download_button(
-        label="Download Processed Data",
+        label="Baixar Dados Processados",
         data=processed_df.to_csv(index=False).encode('utf-8'),
-        file_name='processed_efluente_data.csv',
+        file_name='dados_processados_efluente.csv',
         mime='text/csv'
     )
