@@ -196,4 +196,5 @@ if uploaded_file is not None:
     plot_comparison(comparison_df)
 
     # Provide download option for the processed data
-    st.download
+    st.download_button(
+        label="Baixar
