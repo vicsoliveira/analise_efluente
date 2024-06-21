@@ -20,7 +20,7 @@ def process_efluente_data(df):
             continue
 
         # Process the parameter rows
-        if pd.notna(row[1]) and pd.notna(current_date) and pd.notna(current_sample_type) and row[1] not in ['Elaboração do Laudo', 'NBR', 'Amostra', 'Parâmetro', 'Coleta']:
+        if pd.notna(row[1]) and pd.notna(current_date) and pd.notna(current_sample_type) and row[1] not in ['Elaboração do Laudo', 'NBR', 'Amostra', 'Parâmetro', 'Coleta', 'Parâmetro extra']:
             record = {
                 'Data': current_date,
                 'Tipo de Amostra': current_sample_type,
@@ -41,10 +41,9 @@ uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
 if uploaded_file is not None:
     df = pd.read_excel(uploaded_file, header=None)
-    st.write("Uploaded Data:")
-    st.dataframe(df)
-
+    
     processed_df = process_efluente_data(df)
+    
     st.write("Processed Data:")
     st.dataframe(processed_df)
 
