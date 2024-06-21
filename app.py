@@ -1,77 +1,57 @@
 import streamlit as st
 import pandas as pd
-from io import BytesIO
 
-# Função para carregar e processar o arquivo Excel
-def process_excel(file):
-    df = pd.read_excel(file, sheet_name=None)
-    return df
+def process_efluente_data(df):
+    records = []
+    current_date = None
+    current_sample_type = None
 
-# Função para criar o botão de download
-def to_excel(df):
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
-    df.to_excel(writer, index=False, sheet_name='Sheet1')
-    writer.save()
-    processed_data = output.getvalue()
-    return processed_data
+    for i, row in df.iterrows():
+        # Capture the date from the 'Coleta' row
+        if pd.notna(row[1]) and row[1] == 'Coleta':
+            current_date = row[2]
 
-# Configuração do Streamlit
-st.title('Análise de Amostras de Efluente')
+        # Capture the sample type from the 'Amostra' row
+        if pd.notna(row[1]) and row[1] == 'Amostra':
+            current_sample_type = row[2]
 
-uploaded_file = st.file_uploader("Escolha um arquivo Excel", type="xlsx")
+        # Skip the header row of parameters
+        if row[1] == 'Parâmetro':
+            continue
+
+        # Process the parameter rows
+        if pd.notna(row[1]) and pd.notna(current_date) and pd.notna(current_sample_type) and row[1] not in ['Elaboração do Laudo', 'NBR', 'Amostra', 'Parâmetro', 'Coleta']:
+            record = {
+                'Data': current_date,
+                'Tipo de Amostra': current_sample_type,
+                'Parâmetro': row[1],
+                'Valor Obtido': row[2],
+                'Unidade': row[3],
+                'Valor Mínimo (NBR)': row[4],
+                'Valor Máximo (NBR)': row[5],
+                'Resultado': row[6]
+            }
+            records.append(record)
+
+    return pd.DataFrame(records)
+
+st.title("Efluente Data Processor")
+
+uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
 if uploaded_file is not None:
-    # Processa o arquivo Excel
-    data = process_excel(uploaded_file)
+    df = pd.read_excel(uploaded_file, header=None)
+    st.write("Uploaded Data:")
+    st.dataframe(df)
 
-    # Exibe os nomes das planilhas
-    sheet_names = list(data.keys())
-    st.write("Planilhas encontradas:", sheet_names)
+    processed_df = process_efluente_data(df)
+    st.write("Processed Data:")
+    st.dataframe(processed_df)
 
-    # Dados organizados
-    df_nbr = pd.DataFrame()
-    df_no_nbr = pd.DataFrame()
-
-    # Loop para processar e organizar cada planilha
-    for sheet_name in sheet_names:
-        st.subheader(f'Planilha: {sheet_name}')
-        df = data[sheet_name]
-
-        # Verifica se a planilha contém os parâmetros da NBR 16783
-        if 'Parâmetro' in df.columns and 'Resultado' in df.columns:
-            if 'Padrão NBR 16783' in df.columns:
-                df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
-                df_nbr = pd.concat([df_nbr, df])
-            else:
-                df_no_nbr = pd.concat([df_no_nbr, df])
-
-        st.write(df)
-
-    # Exibe os dados organizados
-    if not df_nbr.empty:
-        st.subheader('Parâmetros com comparação NBR 16783')
-        st.write(df_nbr)
-
-    if not df_no_nbr.empty:
-        st.subheader('Parâmetros sem comparação NBR 16783')
-        st.write(df_no_nbr)
-
-    # Cria os arquivos para download
-    if not df_nbr.empty:
-        df_nbr_excel = to_excel(df_nbr)
-        st.download_button(
-            label="Download Parâmetros com NBR",
-            data=df_nbr_excel,
-            file_name='Parametros_com_NBR.xlsx',
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-
-    if not df_no_nbr.empty:
-        df_no_nbr_excel = to_excel(df_no_nbr)
-        st.download_button(
-            label="Download Parâmetros sem NBR",
-            data=df_no_nbr_excel,
-            file_name='Parametros_sem_NBR.xlsx',
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+    # Provide download option for the processed data
+    st.download_button(
+        label="Download Processed Data",
+        data=processed_df.to_csv(index=False).encode('utf-8'),
+        file_name='processed_efluente_data.csv',
+        mime='text/csv'
+    )
