@@ -19,16 +19,36 @@ if uploaded_file is not None:
     sheet_names = list(data.keys())
     st.write("Planilhas encontradas:", sheet_names)
 
-    # Loop para exibir cada planilha
+    # Dados organizados
+    df_nbr = pd.DataFrame()
+    df_no_nbr = pd.DataFrame()
+
+    # Loop para processar e organizar cada planilha
     for sheet_name in sheet_names:
         st.subheader(f'Planilha: {sheet_name}')
         df = data[sheet_name]
+
+        # Verifica e organiza os dados conforme solicitado
+        if 'Parâmetro' in df.columns and 'Resultado' in df.columns:
+            if 'Padrão NBR 16783' in df.columns:
+                df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
+                df_nbr = pd.concat([df_nbr, df])
+            else:
+                df_no_nbr = pd.concat([df_no_nbr, df])
+
         st.write(df)
 
-        # Verifica se a planilha contém os parâmetros da NBR 16783
-        if 'Parâmetro' in df.columns and 'Resultado' in df.columns and 'Padrão NBR 16783' in df.columns:
-            df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
-            st.write(df)
-        else:
-            st.write("Esta planilha não contém os parâmetros necessários para comparação com a NBR 16783.")
+    # Exibe os dados organizados
+    st.subheader('Parâmetros com comparação NBR 16783')
+    st.write(df_nbr)
 
+    st.subheader('Parâmetros sem comparação NBR 16783')
+    st.write(df_no_nbr)
+
+    # Salva os dados organizados em arquivos separados (opcional)
+    df_nbr.to_excel('/mnt/data/Parametros_com_NBR.xlsx', index=False)
+    df_no_nbr.to_excel('/mnt/data/Parametros_sem_NBR.xlsx', index=False)
+
+    st.success('Dados organizados e salvos com sucesso!')
+    st.markdown(f"[Download Parâmetros com NBR](mnt/data/Parametros_com_NBR.xlsx)")
+    st.markdown(f"[Download Parâmetros sem NBR](mnt/data/Parametros_sem_NBR.xlsx)")
