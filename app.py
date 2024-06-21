@@ -52,6 +52,10 @@ def read_and_organize_data(file):
         # Remover as linhas que foram usadas para preencher as colunas acima
         df = df.drop([0, 1, 2, 3]).reset_index(drop=True)
 
+        # Verificar o DataFrame após ajustes
+        st.write("DataFrame após ajustes:")
+        st.write(df.head(10))
+
         # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
         try:
             df['Coleta'] = pd.to_datetime(df['Coleta'], format='%d/%m/%Y')
@@ -97,8 +101,14 @@ def analyze_treatment_quality(df):
     quality_analysis = []
 
     for parameter in parameters:
-        raw = df[(df['Amostra'].str.contains('Bruto')) & (df['Parâmetro'] == parameter)]
-        treated = df[(df['Amostra'].str.contains('Tratado')) & (df['Parâmetro'] == parameter)]
+        raw = df[(df['Amostra'].str.contains('Bruto', case=False, na=False)) & (df['Parâmetro'] == parameter)]
+        treated = df[(df['Amostra'].str.contains('Tratado', case=False, na=False)) & (df['Parâmetro'] == parameter)]
+
+        st.write(f"Analisando o parâmetro: {parameter}")
+        st.write("Dados de Efluente Bruto:")
+        st.write(raw)
+        st.write("Dados de Efluente Tratado:")
+        st.write(treated)
 
         if not raw.empty and not treated.empty:
             merged = pd.merge(raw, treated, on=['Coleta', 'Parâmetro'], suffixes=('_Bruto', '_Tratado'))
