@@ -28,10 +28,10 @@ def read_and_organize_data(file):
     data_frames = []
     for start_row in start_rows:
         # Identificar a linha onde os dados começam
-        coleta = df.iloc[start_row - 3, 2]
-        elaboracao = df.iloc[start_row - 2, 2]
-        nbr = df.iloc[start_row - 1, 2]
-        amostra = df.iloc[start_row + 1, 2]
+        coleta = df.iloc[start_row - 3, 1]
+        elaboracao = df.iloc[start_row - 2, 1]
+        nbr = df.iloc[start_row - 1, 1]
+        amostra = df.iloc[start_row + 1, 1]
 
         # Recarregar os dados a partir da linha correta
         sub_df = df.iloc[start_row + 1:start_row + 11].reset_index(drop=True)  # Ajustar conforme necessário
