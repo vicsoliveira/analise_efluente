@@ -20,64 +20,62 @@ def read_and_organize_data(file):
     # Carregar os dados do Excel e exibir as primeiras linhas para depuração
     df = pd.read_excel(file)
     st.write("Primeiras linhas do DataFrame após leitura:")
-    st.write(df.head(10))
+    st.write(df.head(20))
 
-    # Procurar a linha onde os dados realmente começam
-    start_row = None
-    for i, row in df.iterrows():
-        if "Parâmetro" in row.values:
-            start_row = i
-            break
+    # Procurar todas as linhas onde os dados realmente começam
+    start_rows = df[df.iloc[:, 0].str.contains('Parâmetro', na=False)].index.tolist()
 
-    if start_row is not None:
+    data_frames = []
+    for start_row in start_rows:
         # Recarregar os dados a partir da linha correta
-        df = pd.read_excel(file, skiprows=start_row + 1)
-        st.write("Colunas do DataFrame após ajuste:")
-        st.write(df.columns)
+        sub_df = pd.read_excel(file, skiprows=start_row + 1, nrows=20)  # Ajustar 'nrows' conforme necessário
+        st.write(f"Colunas do DataFrame após ajuste (início na linha {start_row}):")
+        st.write(sub_df.columns)
 
         # Ajustar os nomes das colunas
         expected_columns = ["Parâmetro", "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
-        if len(df.columns) >= len(expected_columns):
-            df.columns = ["Unnamed: 0"] + expected_columns
+        if len(sub_df.columns) >= len(expected_columns):
+            sub_df.columns = ["Unnamed: 0"] + expected_columns
         else:
             st.error("O número de colunas no arquivo não corresponde ao esperado.")
             return None
 
         # Adicionar colunas 'Coleta', 'Elaboração do Laudo', 'NBR' e 'Amostra' manualmente
-        df["Coleta"] = df.iloc[0, 0]
-        df["Elaboração do Laudo"] = df.iloc[1, 0]
-        df["NBR"] = df.iloc[2, 0]
-        df["Amostra"] = df.iloc[3, 1]
+        sub_df["Coleta"] = df.iloc[start_row - 3, 1]
+        sub_df["Elaboração do Laudo"] = df.iloc[start_row - 2, 1]
+        sub_df["NBR"] = df.iloc[start_row - 1, 1]
+        sub_df["Amostra"] = df.iloc[start_row + 1, 1]
 
         # Remover as linhas que foram usadas para preencher as colunas acima
-        df = df.drop([0, 1, 2, 3]).reset_index(drop=True)
+        sub_df = sub_df.drop([0, 1, 2, 3]).reset_index(drop=True)
 
         # Verificar o DataFrame após ajustes
         st.write("DataFrame após ajustes:")
-        st.write(df.head(10))
+        st.write(sub_df.head(10))
 
         # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
         try:
-            df['Coleta'] = pd.to_datetime(df['Coleta'], format='%d/%m/%Y')
+            sub_df['Coleta'] = pd.to_datetime(sub_df['Coleta'], format='%d/%m/%Y')
         except ValueError:
             try:
-                df['Coleta'] = pd.to_datetime(df['Coleta'], format='%Y-%m-%d')
+                sub_df['Coleta'] = pd.to_datetime(sub_df['Coleta'], format='%Y-%m-%d')
             except ValueError:
-                df['Coleta'] = pd.to_datetime(df['Coleta'], errors='coerce')
+                sub_df['Coleta'] = pd.to_datetime(sub_df['Coleta'], errors='coerce')
 
         # Verificar se há datas não convertidas
-        if df['Coleta'].isnull().any():
+        if sub_df['Coleta'].isnull().any():
             st.warning("Algumas datas na coluna 'Coleta' não puderam ser convertidas e foram definidas como NaT.")
 
-        df.sort_values(by='Coleta', inplace=True)
-        return df
-    else:
-        st.error("Não foi possível encontrar a linha de início dos dados.")
-        return None
+        sub_df.sort_values(by='Coleta', inplace=True)
+        data_frames.append(sub_df)
+
+    # Concatenar todos os DataFrames processados
+    df = pd.concat(data_frames, ignore_index=True)
+    return df
 
 # Função para analisar a evolução temporal dos resultados dos efluentes tratados
 def analyze_temporal_evolution(df):
-    treated = df[df['Amostra'].str.contains('Tratado')]
+    treated = df[df['Amostra'].str.contains('Tratado', case=False, na=False)]
     parameters = treated['Parâmetro'].unique()
 
     for parameter in parameters:
