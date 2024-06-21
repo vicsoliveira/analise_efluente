@@ -24,13 +24,10 @@ def read_and_organize_data(file):
     st.write("Colunas do DataFrame após leitura:")
     st.write(df.columns)
 
-    # Verificar se o número de colunas corresponde ao esperado
-    expected_columns = ["Coleta", "Elaboração do Laudo", "NBR", "Amostra", "Parâmetro", 
-                        "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
-
-    if len(df.columns) >= len(expected_columns):
-        df = df.iloc[:, :len(expected_columns)]  # Selecionar apenas as colunas esperadas
-        df.columns = expected_columns
+    # Ajustar os nomes das colunas conforme necessário
+    if len(df.columns) >= 10:
+        df.columns = ["Coleta", "Elaboração do Laudo", "NBR", "Amostra", "Parâmetro", 
+                      "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
     else:
         st.error("O número de colunas no arquivo não corresponde ao esperado.")
         return None
