@@ -89,9 +89,9 @@ def plot_changes(df):
         height = bar.get_height()
         ax.annotate(f'Inicial: {inicial:.2f}\nFinal: {final:.2f}', 
                     xy=(bar.get_x() + bar.get_width() / 2, height), 
-                    xytext=(0, 3),  # 3 points vertical offset
+                    xytext=(0, 5),  # 5 points vertical offset
                     textcoords="offset points", 
-                    ha='center', va='bottom', fontsize=8)
+                    ha='center', va='bottom', fontsize=10, color='black')
 
     plt.xticks(rotation=45, ha='right')
     plt.ylabel('Mudança (%)')
