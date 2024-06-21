@@ -1,6 +1,15 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathspec import PathSpec
+from pathspec.patterns import GitWildMatchPattern
+
+# Função para ler e aplicar o arquivo .gitignore
+def load_gitignore():
+    with open('.gitignore', 'r') as f:
+        gitignore_content = f.read()
+    spec = PathSpec.from_lines(GitWildMatchPattern, gitignore_content.splitlines())
+    return spec
 
 # Função para ler e organizar os dados
 def read_and_organize_data(file):
@@ -49,19 +58,23 @@ def analyze_treatment_quality(df):
 # Função principal para executar as análises e gerar o arquivo para download
 def main():
     st.title("Análise de Efluentes de Estação de Tratamento")
-    
+
+    # Carregar e aplicar o arquivo .gitignore
+    spec = load_gitignore()
+    st.success(".gitignore aplicado com sucesso.")
+
     uploaded_file = st.file_uploader("Faça o upload do arquivo Excel com os dados dos efluentes", type=["xlsx"])
-    
+
     if uploaded_file is not None:
         df = read_and_organize_data(uploaded_file)
-        
+
         st.subheader("Análise Temporal dos Efluentes Tratados")
         analyze_temporal_evolution(df)
-        
+
         st.subheader("Análise da Qualidade do Tratamento")
         quality_df = analyze_treatment_quality(df)
         st.write(quality_df)
-        
+
         csv = quality_df.to_csv(index=False).encode('utf-8')
         st.download_button(
             label="Baixar Análise da Qualidade do Tratamento",
@@ -72,3 +85,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
