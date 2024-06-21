@@ -49,15 +49,17 @@ def calculate_changes(df):
             first_row = group.iloc[0]
             last_row = group.iloc[-1]
             if pd.notna(first_row['Valor Obtido']) and pd.notna(last_row['Valor Obtido']):
-                change = {
-                    'Parâmetro': name,
-                    'Data Inicial': first_row['Data'].date(),
-                    'Data Final': last_row['Data'].date(),
-                    'Valor Inicial': first_row['Valor Obtido'],
-                    'Valor Final': last_row['Valor Obtido'],
-                    'Mudança (%)': ((last_row['Valor Obtido'] - first_row['Valor Obtido']) / abs(first_row['Valor Obtido'])) * 100
-                }
-                changes.append(change)
+                percent_change = ((last_row['Valor Obtido'] - first_row['Valor Obtido']) / abs(first_row['Valor Obtido'])) * 100
+                if percent_change != 0:
+                    change = {
+                        'Parâmetro': name,
+                        'Data Inicial': first_row['Data'].date(),
+                        'Data Final': last_row['Data'].date(),
+                        'Valor Inicial': first_row['Valor Obtido'],
+                        'Valor Final': last_row['Valor Obtido'],
+                        'Mudança (%)': percent_change
+                    }
+                    changes.append(change)
 
     return pd.DataFrame(changes)
 
