@@ -36,8 +36,21 @@ def read_and_organize_data(file):
         st.write(df.columns)
 
         # Ajustar os nomes das colunas
-        df.columns = ["Coleta", "Elaboração do Laudo", "NBR", "Amostra", "Parâmetro", 
-                      "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
+        expected_columns = ["Parâmetro", "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
+        if len(df.columns) >= len(expected_columns):
+            df.columns = ["Unnamed: 0"] + expected_columns
+        else:
+            st.error("O número de colunas no arquivo não corresponde ao esperado.")
+            return None
+
+        # Adicionar colunas 'Coleta', 'Elaboração do Laudo', 'NBR' e 'Amostra' manualmente
+        df["Coleta"] = df.iloc[0, 0]
+        df["Elaboração do Laudo"] = df.iloc[1, 0]
+        df["NBR"] = df.iloc[2, 0]
+        df["Amostra"] = df.iloc[3, 1]
+
+        # Remover a primeira linha que foi usada para preencher as colunas acima
+        df = df.drop([0, 1, 2, 3]).reset_index(drop=True)
 
         # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
         try:
