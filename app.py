@@ -73,24 +73,33 @@ def plot_changes(df):
 
     df = df.sort_values(by='Mudança (%)', key=abs, ascending=False).head(10)  # Take top 10 changes
     parameters = df['Parâmetro']
-    percentages = df['Mudança (%)']
+    valores_iniciais = df['Valor Inicial']
+    valores_finais = df['Valor Final']
     data_inicial = df['Data Inicial']
     data_final = df['Data Final']
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(parameters, percentages, marker='o')
+    ax.plot(parameters, valores_iniciais, marker='o', label='Valor Inicial')
+    ax.plot(parameters, valores_finais, marker='o', label='Valor Final')
 
-    for i, txt in enumerate(percentages):
-        ax.annotate(f'{txt:.2f}%\n({data_inicial.iloc[i]} to {data_final.iloc[i]})', 
-                    (i, percentages.iloc[i]), 
+    for i in range(len(df)):
+        ax.annotate(f'{valores_iniciais.iloc[i]:.2f}', 
+                    (i, valores_iniciais.iloc[i]), 
                     textcoords="offset points", 
                     xytext=(0,10), 
                     ha='center',
                     fontsize=8)
+        ax.annotate(f'{valores_finais.iloc[i]:.2f}', 
+                    (i, valores_finais.iloc[i]), 
+                    textcoords="offset points", 
+                    xytext=(0,-15), 
+                    ha='center',
+                    fontsize=8)
 
     plt.xticks(rotation=45, ha='right')
-    plt.ylabel('Mudança (%)')
-    plt.title('Top 10 Mudanças nos Parâmetros (%)')
+    plt.ylabel('Valores Obtidos')
+    plt.title('Top 10 Mudanças nos Parâmetros')
+    plt.legend()
     plt.grid(True)
     plt.tight_layout()
     st.pyplot(fig)
