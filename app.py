@@ -17,7 +17,6 @@ def load_gitignore():
 
 # Função para ler e organizar os dados
 def read_and_organize_data(file):
-    # Carregar os dados do Excel e exibir as primeiras linhas para depuração
     df = pd.read_excel(file, header=None)
     st.write("Primeiras linhas do DataFrame após leitura:")
     st.write(df.head(20))
@@ -34,11 +33,7 @@ def read_and_organize_data(file):
         amostra = df.iloc[start_row + 4, 2]
 
         # Recarregar os dados a partir da linha correta
-        sub_df = df.iloc[start_row + 5:start_row + 11].reset_index(drop=True)  # Ajustar conforme necessário
-        st.write(f"Colunas do DataFrame após ajuste (início na linha {start_row}):")
-        st.write(sub_df)
-
-        # Ajustar os nomes das colunas
+        sub_df = df.iloc[start_row + 5:start_row + 15].reset_index(drop=True)
         sub_df.columns = ["Unnamed: 0", "Parâmetro", "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
 
         # Adicionar colunas 'Coleta', 'Elaboração do Laudo', 'NBR' e 'Amostra' manualmente
