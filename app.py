@@ -17,8 +17,26 @@ def load_gitignore():
 
 # Função para ler e organizar os dados
 def read_and_organize_data(file):
-    df = pd.read_excel(file)
-    df['Coleta'] = pd.to_datetime(df['Coleta'], format='%d/%m/%Y')
+    # Carregar os dados do Excel, ignorando as três primeiras linhas
+    df = pd.read_excel(file, skiprows=3)
+
+    # Renomear as colunas
+    df.columns = ["Coleta", "Elaboração do Laudo", "NBR", "Amostra", "Parâmetro", 
+                  "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
+
+    # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
+    try:
+        df['Coleta'] = pd.to_datetime(df['Coleta'], format='%d/%m/%Y')
+    except ValueError:
+        try:
+            df['Coleta'] = pd.to_datetime(df['Coleta'], format='%Y-%m-%d')
+        except ValueError:
+            df['Coleta'] = pd.to_datetime(df['Coleta'], errors='coerce')
+
+    # Verificar se há datas não convertidas
+    if df['Coleta'].isnull().any():
+        st.warning("Algumas datas na coluna 'Coleta' não puderam ser convertidas e foram definidas como NaT.")
+
     df.sort_values(by='Coleta', inplace=True)
     return df
 
