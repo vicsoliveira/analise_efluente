@@ -89,16 +89,16 @@ def plot_changes(df):
         height = bar.get_height()
         ax.annotate(f'Inicial: {inicial:.2f}\nFinal: {final:.2f}', 
                     xy=(bar.get_x() + bar.get_width() / 2, height), 
-                    xytext=(0, 8),  # 8 points vertical offset
+                    xytext=(0, 10),  # 10 points vertical offset
                     textcoords="offset points", 
-                    ha='center', va='bottom', fontsize=12, color='white', fontweight='bold', bbox=dict(facecolor='black', alpha=0.6))
+                    ha='center', va='bottom', fontsize=12, color='white', fontweight='bold', bbox=dict(facecolor='black', alpha=0.7))
 
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    plt.xticks(rotation=45, ha='right', fontsize=12)
-    plt.yticks(fontsize=12)
-    plt.ylabel('Mudança (%)', fontsize=14)
-    plt.title('Top 10 Mudanças nos Parâmetros (%)', fontsize=16, fontweight='bold')
+    plt.xticks(rotation=45, ha='right', fontsize=14, fontweight='bold')
+    plt.yticks(fontsize=14, fontweight='bold')
+    plt.ylabel('Mudança (%)', fontsize=16, fontweight='bold')
+    plt.title('Top 10 Mudanças nos Parâmetros (%)', fontsize=18, fontweight='bold')
     plt.grid(axis='y', linestyle='--', linewidth=0.7)
     plt.tight_layout()
     st.pyplot(fig)
@@ -125,4 +125,6 @@ if uploaded_file is not None:
         data=processed_df.to_csv(index=False).encode('utf-8'),
         file_name='dados_processados_efluente.csv',
         mime='text/csv'
+    )
+
     )
