@@ -67,39 +67,60 @@ def calculate_changes(df):
 
     return pd.DataFrame(changes)
 
-def plot_changes(df):
+def compare_efluente_bruto_tratado(df):
+    df['Data'] = pd.to_datetime(df['Data'])
+    df['Valor Obtido'] = pd.to_numeric(df['Valor Obtido'], errors='coerce')
+    
+    comparison = []
+    grouped = df.groupby('Data')
+
+    for date, group in grouped:
+        bruto = group[group['Tipo de Amostra'] == 'Efluente Bruto']
+        tratado = group[group['Tipo de Amostra'] != 'Efluente Bruto']
+        if not bruto.empty and not tratado.empty:
+            for param in bruto['Parâmetro'].unique():
+                bruto_value = bruto[bruto['Parâmetro'] == param]['Valor Obtido'].values
+                tratado_value = tratado[tratado['Parâmetro'] == param]['Valor Obtido'].values
+                if bruto_value.size > 0 and tratado_value.size > 0:
+                    comparison.append({
+                        'Data': date,
+                        'Parâmetro': param,
+                        'Valor Bruto': bruto_value[0],
+                        'Valor Tratado': tratado_value[0],
+                        'Diferença': bruto_value[0] - tratado_value[0]
+                    })
+
+    return pd.DataFrame(comparison)
+
+def plot_comparison(df):
     if df.empty:
         st.write("No valid data to plot.")
         return
 
-    df = df.sort_values(by='Mudança (%)', key=abs, ascending=False).head(10)  # Take top 10 changes
+    df = df.sort_values(by='Diferença', key=abs, ascending=False).head(10)  # Take top 10 differences
     parameters = df['Parâmetro']
-    percentages = df['Mudança (%)']
-    valores_iniciais = df['Valor Inicial']
-    valores_finais = df['Valor Final']
-
-    # Generate a colormap
-    cmap = plt.get_cmap('tab20')
-    colors = [cmap(i) for i in np.linspace(0, 1, len(parameters))]
+    bruto_values = df['Valor Bruto']
+    tratado_values = df['Valor Tratado']
+    differences = df['Diferença']
 
     fig, ax = plt.subplots(figsize=(14, 7))
-    bars = ax.bar(parameters, percentages, color=colors, edgecolor='black')
+    bar_width = 0.35
+    index = np.arange(len(parameters))
 
-    for bar, inicial, final in zip(bars, valores_iniciais, valores_finais):
-        height = bar.get_height()
-        ax.annotate(f'Inicial: {inicial:.2f}\nFinal: {final:.2f}', 
-                    xy=(bar.get_x() + bar.get_width() / 2, height), 
-                    xytext=(0, 10),  # 10 points vertical offset
-                    textcoords="offset points", 
-                    ha='center', va='bottom', fontsize=12, color='white', fontweight='bold', bbox=dict(facecolor='black', alpha=0.7))
+    bar1 = ax.bar(index, bruto_values, bar_width, label='Valor Bruto', color='skyblue', edgecolor='black')
+    bar2 = ax.bar(index + bar_width, tratado_values, bar_width, label='Valor Tratado', color='lightgreen', edgecolor='black')
 
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    plt.xticks(rotation=45, ha='right', fontsize=14, fontweight='bold')
-    plt.yticks(fontsize=14, fontweight='bold')
-    plt.ylabel('Mudança (%)', fontsize=16, fontweight='bold')
-    plt.title('Top 10 Mudanças nos Parâmetros (%)', fontsize=18, fontweight='bold')
-    plt.grid(axis='y', linestyle='--', linewidth=0.7)
+    for i, (bruto, tratado) in enumerate(zip(bruto_values, tratado_values)):
+        ax.annotate(f'{bruto:.2f}', xy=(i, bruto), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=10, fontweight='bold')
+        ax.annotate(f'{tratado:.2f}', xy=(i + bar_width, tratado), xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=10, fontweight='bold')
+
+    ax.set_xlabel('Parâmetros', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Valores Obtidos', fontsize=14, fontweight='bold')
+    ax.set_title('Comparação de Valores Brutos e Tratados para a Mesma Data', fontsize=16, fontweight='bold')
+    ax.set_xticks(index + bar_width / 2)
+    ax.set_xticklabels(parameters, rotation=45, ha='right', fontsize=12, fontweight='bold')
+    ax.legend()
+    ax.grid(axis='y', linestyle='--', linewidth=0.7)
     plt.tight_layout()
     st.pyplot(fig)
 
@@ -118,6 +139,11 @@ if uploaded_file is not None:
 
     st.write("Top Mudanças nos Parâmetros:")
     plot_changes(changes_df)
+
+    comparison_df = compare_efluente_bruto_tratado(processed_df)
+
+    st.write("Comparação de Valores Brutos e Tratados:")
+    plot_comparison(comparison_df)
 
     # Provide download option for the processed data
     st.download_button(
