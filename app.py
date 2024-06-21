@@ -20,9 +20,20 @@ def read_and_organize_data(file):
     # Carregar os dados do Excel, ignorando as três primeiras linhas
     df = pd.read_excel(file, skiprows=3)
 
-    # Renomear as colunas
-    df.columns = ["Coleta", "Elaboração do Laudo", "NBR", "Amostra", "Parâmetro", 
-                  "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
+    # Exibir as colunas para depuração
+    st.write("Colunas do DataFrame após leitura:")
+    st.write(df.columns)
+
+    # Verificar se o número de colunas corresponde ao esperado
+    expected_columns = ["Coleta", "Elaboração do Laudo", "NBR", "Amostra", "Parâmetro", 
+                        "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
+
+    if len(df.columns) >= len(expected_columns):
+        df = df.iloc[:, :len(expected_columns)]  # Selecionar apenas as colunas esperadas
+        df.columns = expected_columns
+    else:
+        st.error("O número de colunas no arquivo não corresponde ao esperado.")
+        return None
 
     # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
     try:
@@ -92,21 +103,22 @@ def main():
 
     if uploaded_file is not None:
         df = read_and_organize_data(uploaded_file)
+        
+        if df is not None:
+            st.subheader("Análise Temporal dos Efluentes Tratados")
+            analyze_temporal_evolution(df)
 
-        st.subheader("Análise Temporal dos Efluentes Tratados")
-        analyze_temporal_evolution(df)
+            st.subheader("Análise da Qualidade do Tratamento")
+            quality_df = analyze_treatment_quality(df)
+            st.write(quality_df)
 
-        st.subheader("Análise da Qualidade do Tratamento")
-        quality_df = analyze_treatment_quality(df)
-        st.write(quality_df)
-
-        csv = quality_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="Baixar Análise da Qualidade do Tratamento",
-            data=csv,
-            file_name='analise_qualidade_tratamento.csv',
-            mime='text/csv',
-        )
+            csv = quality_df.to_csv(index=False).encode('utf-8')
+            st.download_button(
+                label="Baixar Análise da Qualidade do Tratamento",
+                data=csv,
+                file_name='analise_qualidade_tratamento.csv',
+                mime='text/csv',
+            )
 
 if __name__ == "__main__":
     main()
