@@ -79,20 +79,22 @@ def plot_changes(df):
     valores_finais = df['Valor Final']
 
     # Generate a colormap
-    cmap = plt.get_cmap('tab10')
+    cmap = plt.get_cmap('tab20')
     colors = [cmap(i) for i in np.linspace(0, 1, len(parameters))]
 
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(14, 7))
     bars = ax.bar(parameters, percentages, color=colors, edgecolor='black')
 
     for bar, inicial, final in zip(bars, valores_iniciais, valores_finais):
         height = bar.get_height()
         ax.annotate(f'Inicial: {inicial:.2f}\nFinal: {final:.2f}', 
                     xy=(bar.get_x() + bar.get_width() / 2, height), 
-                    xytext=(0, 5),  # 5 points vertical offset
+                    xytext=(0, 8),  # 8 points vertical offset
                     textcoords="offset points", 
-                    ha='center', va='bottom', fontsize=12, color='black', fontweight='bold')
+                    ha='center', va='bottom', fontsize=12, color='white', fontweight='bold', bbox=dict(facecolor='black', alpha=0.6))
 
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
     plt.xticks(rotation=45, ha='right', fontsize=12)
     plt.yticks(fontsize=12)
     plt.ylabel('Mudança (%)', fontsize=14)
