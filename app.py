@@ -197,4 +197,4 @@ if uploaded_file is not None:
 
     # Provide download option for the processed data
     st.download_button(
-        label="Baixar Dados"
+        label="Baixar Dados")
