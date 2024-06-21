@@ -6,10 +6,14 @@ from pathspec.patterns import GitWildMatchPattern
 
 # Função para ler e aplicar o arquivo .gitignore
 def load_gitignore():
-    with open('.gitignore', 'r') as f:
-        gitignore_content = f.read()
-    spec = PathSpec.from_lines(GitWildMatchPattern, gitignore_content.splitlines())
-    return spec
+    try:
+        with open('.gitignore', 'r') as f:
+            gitignore_content = f.read()
+        spec = PathSpec.from_lines(GitWildMatchPattern, gitignore_content.splitlines())
+        return spec
+    except FileNotFoundError:
+        st.warning("Arquivo .gitignore não encontrado. Ignorando.")
+        return None
 
 # Função para ler e organizar os dados
 def read_and_organize_data(file):
@@ -61,7 +65,10 @@ def main():
 
     # Carregar e aplicar o arquivo .gitignore
     spec = load_gitignore()
-    st.success(".gitignore aplicado com sucesso.")
+    if spec:
+        st.success(".gitignore aplicado com sucesso.")
+    else:
+        st.info("Nenhum .gitignore aplicado.")
 
     uploaded_file = st.file_uploader("Faça o upload do arquivo Excel com os dados dos efluentes", type=["xlsx"])
 
@@ -85,4 +92,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
