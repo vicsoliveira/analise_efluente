@@ -48,9 +48,12 @@ if uploaded_file is not None:
         st.write(df_no_nbr)
 
     # Salva os dados organizados em arquivos separados (opcional)
-    df_nbr.to_excel('/mnt/data/Parametros_com_NBR.xlsx', index=False)
-    df_no_nbr.to_excel('/mnt/data/Parametros_sem_NBR.xlsx', index=False)
+    df_nbr_path = 'Parametros_com_NBR.xlsx'
+    df_no_nbr_path = 'Parametros_sem_NBR.xlsx'
+
+    df_nbr.to_excel(df_nbr_path, index=False)
+    df_no_nbr.to_excel(df_no_nbr_path, index=False)
 
     st.success('Dados organizados e salvos com sucesso!')
-    st.markdown(f"[Download Parâmetros com NBR](Parametros_com_NBR.xlsx)")
-    st.markdown(f"[Download Parâmetros sem NBR](Parametros_sem_NBR.xlsx)")
+    st.markdown(f"[Download Parâmetros com NBR](./{df_nbr_path})")
+    st.markdown(f"[Download Parâmetros sem NBR](./{df_no_nbr_path})")
