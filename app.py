@@ -8,13 +8,13 @@ def read_and_organize_data(file):
     st.write(df.head(20))
 
     # Procurar todas as linhas onde os dados realmente começam
-    start_rows = df[df.iloc[:, 1].str.contains('Coleta', na=False)].index.tolist()
+    start_rows = df[df.iloc[:, 0].str.contains('Coleta', na=False)].index.tolist()
 
     data_list = []
     for start_row in start_rows:
-        coleta = df.iloc[start_row + 1, 2]
-        elaboracao = df.iloc[start_row + 2, 2]
-        amostra = df.iloc[start_row + 4, 2]
+        coleta = df.iloc[start_row + 1, 1]
+        elaboracao = df.iloc[start_row + 2, 1]
+        amostra = df.iloc[start_row + 4, 1]
 
         # Coletar todos os parâmetros analisados
         parametros_data = df.iloc[start_row + 6:start_row + 20].reset_index(drop=True)
