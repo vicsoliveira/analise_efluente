@@ -28,22 +28,23 @@ if uploaded_file is not None:
         st.subheader(f'Planilha: {sheet_name}')
         df = data[sheet_name]
 
-        # Verifica e organiza os dados conforme solicitado
-        if 'Parâmetro' in df.columns and 'Resultado' in df.columns:
-            if 'Padrão NBR 16783' in df.columns:
-                df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
-                df_nbr = pd.concat([df_nbr, df])
-            else:
-                df_no_nbr = pd.concat([df_no_nbr, df])
+        # Verifica se a planilha contém os parâmetros da NBR 16783
+        if 'Parâmetro' in df.columns and 'Resultado' in df.columns and 'Padrão NBR 16783' in df.columns:
+            df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
+            df_nbr = pd.concat([df_nbr, df])
+        else:
+            df_no_nbr = pd.concat([df_no_nbr, df])
 
         st.write(df)
 
     # Exibe os dados organizados
-    st.subheader('Parâmetros com comparação NBR 16783')
-    st.write(df_nbr)
+    if not df_nbr.empty:
+        st.subheader('Parâmetros com comparação NBR 16783')
+        st.write(df_nbr)
 
-    st.subheader('Parâmetros sem comparação NBR 16783')
-    st.write(df_no_nbr)
+    if not df_no_nbr.empty:
+        st.subheader('Parâmetros sem comparação NBR 16783')
+        st.write(df_no_nbr)
 
     # Salva os dados organizados em arquivos separados (opcional)
     df_nbr.to_excel('/mnt/data/Parametros_com_NBR.xlsx', index=False)
