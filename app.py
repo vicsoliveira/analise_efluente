@@ -18,7 +18,7 @@ def load_gitignore():
 # Função para ler e organizar os dados
 def read_and_organize_data(file):
     # Carregar os dados do Excel e exibir as primeiras linhas para depuração
-    df = pd.read_excel(file)
+    df = pd.read_excel(file, header=None)
     st.write("Primeiras linhas do DataFrame após leitura:")
     st.write(df.head(20))
 
@@ -27,27 +27,25 @@ def read_and_organize_data(file):
 
     data_frames = []
     for start_row in start_rows:
+        # Identificar a linha onde os dados começam
+        coleta = df.iloc[start_row - 3, 2]
+        elaboracao = df.iloc[start_row - 2, 2]
+        nbr = df.iloc[start_row - 1, 2]
+        amostra = df.iloc[start_row + 1, 2]
+
         # Recarregar os dados a partir da linha correta
-        sub_df = pd.read_excel(file, skiprows=start_row + 1, nrows=20)  # Ajustar 'nrows' conforme necessário
+        sub_df = df.iloc[start_row + 1:start_row + 11].reset_index(drop=True)  # Ajustar conforme necessário
         st.write(f"Colunas do DataFrame após ajuste (início na linha {start_row}):")
-        st.write(sub_df.columns)
+        st.write(sub_df)
 
         # Ajustar os nomes das colunas
-        expected_columns = ["Parâmetro", "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
-        if len(sub_df.columns) >= len(expected_columns):
-            sub_df.columns = ["Unnamed: 0"] + expected_columns
-        else:
-            st.error("O número de colunas no arquivo não corresponde ao esperado.")
-            return None
+        sub_df.columns = ["Unnamed: 0", "Parâmetro", "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
 
         # Adicionar colunas 'Coleta', 'Elaboração do Laudo', 'NBR' e 'Amostra' manualmente
-        sub_df["Coleta"] = df.iloc[start_row - 3, 1]
-        sub_df["Elaboração do Laudo"] = df.iloc[start_row - 2, 1]
-        sub_df["NBR"] = df.iloc[start_row - 1, 1]
-        sub_df["Amostra"] = df.iloc[start_row + 1, 1]
-
-        # Remover as linhas que foram usadas para preencher as colunas acima
-        sub_df = sub_df.drop([0, 1, 2, 3]).reset_index(drop=True)
+        sub_df["Coleta"] = coleta
+        sub_df["Elaboração do Laudo"] = elaboracao
+        sub_df["NBR"] = nbr
+        sub_df["Amostra"] = amostra
 
         # Verificar o DataFrame após ajustes
         st.write("DataFrame após ajustes:")
