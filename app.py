@@ -195,6 +195,3 @@ if uploaded_file is not None:
     st.write("Comparação de Valores Brutos e Tratados:")
     plot_comparison(comparison_df)
 
-    # Provide download option for the processed data
-    st.download_button(
-        label="Baixar Dados")
