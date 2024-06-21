@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 def process_efluente_data(df):
     records = []
@@ -76,11 +77,13 @@ def plot_changes(df):
     percentages = df['Mudança (%)']
     valores_iniciais = df['Valor Inicial']
     valores_finais = df['Valor Final']
-    data_inicial = df['Data Inicial']
-    data_final = df['Data Final']
+
+    # Generate a colormap
+    cmap = plt.get_cmap('tab10')
+    colors = [cmap(i) for i in np.linspace(0, 1, len(parameters))]
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    bars = ax.bar(parameters, percentages, color='skyblue')
+    bars = ax.bar(parameters, percentages, color=colors)
 
     for bar, inicial, final in zip(bars, valores_iniciais, valores_finais):
         height = bar.get_height()
