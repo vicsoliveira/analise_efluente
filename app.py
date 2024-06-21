@@ -1,63 +1,34 @@
 import streamlit as st
 import pandas as pd
 
-# Função para ler e organizar os dados
-def read_and_organize_data(file):
-    df = pd.read_excel(file, header=None)
-    st.write("Primeiras linhas do DataFrame após leitura:")
-    st.write(df.head(20))
+# Função para carregar e processar o arquivo Excel
+def process_excel(file):
+    df = pd.read_excel(file, sheet_name=None)
+    return df
 
-    # Procurar todas as linhas onde os dados realmente começam
-    start_rows = df[df.iloc[:, 0].str.contains('Coleta', na=False)].index.tolist()
+# Configuração do Streamlit
+st.title('Análise de Amostras de Efluente')
 
-    data_list = []
-    for start_row in start_rows:
-        coleta = df.iloc[start_row + 1, 1]
-        elaboracao = df.iloc[start_row + 2, 1]
-        amostra = df.iloc[start_row + 4, 1]
+uploaded_file = st.file_uploader("Escolha um arquivo Excel", type="xlsx")
 
-        # Coletar todos os parâmetros analisados
-        parametros_data = df.iloc[start_row + 6:start_row + 20].reset_index(drop=True)
-        parametros_data.columns = ["Parâmetro", "Valor obtido", "Unidade", "Valor mínimo", "Valor máximo", "Resultado"]
-        
-        for _, row in parametros_data.iterrows():
-            if pd.notna(row["Parâmetro"]):
-                data_list.append({
-                    "Coleta": coleta,
-                    "Elaboração do Laudo": elaboracao,
-                    "Amostra": amostra,
-                    "Parâmetro": row["Parâmetro"],
-                    "Valor obtido": row["Valor obtido"],
-                    "Unidade": row["Unidade"],
-                    "Valor mínimo": row["Valor mínimo"],
-                    "Valor máximo": row["Valor máximo"],
-                    "Resultado": row["Resultado"]
-                })
-    
-    df_final = pd.DataFrame(data_list)
-    
-    st.write("DataFrame organizado:")
-    st.write(df_final)
-    
-    return df_final
+if uploaded_file is not None:
+    # Processa o arquivo Excel
+    data = process_excel(uploaded_file)
 
-# Função principal para executar as análises e gerar o arquivo para download
-def main():
-    st.title("Análise de Efluentes de Estação de Tratamento")
-    
-    uploaded_file = st.file_uploader("Faça o upload do arquivo Excel com os dados dos efluentes", type=["xlsx"])
-    
-    if uploaded_file is not None:
-        df = read_and_organize_data(uploaded_file)
-        
-        if df is not None:
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Baixar Dados Organizados",
-                data=csv,
-                file_name='dados_organizados.csv',
-                mime='text/csv',
-            )
+    # Exibe os nomes das planilhas
+    sheet_names = list(data.keys())
+    st.write("Planilhas encontradas:", sheet_names)
 
-if __name__ == "__main__":
-    main()
+    # Loop para exibir cada planilha
+    for sheet_name in sheet_names:
+        st.subheader(f'Planilha: {sheet_name}')
+        df = data[sheet_name]
+        st.write(df)
+
+        # Verifica se a planilha contém os parâmetros da NBR 16783
+        if 'Parâmetro' in df.columns and 'Resultado' in df.columns and 'Padrão NBR 16783' in df.columns:
+            df['Conformidade'] = df.apply(lambda row: 'Conforme' if row['Resultado'] <= row['Padrão NBR 16783'] else 'Não Conforme', axis=1)
+            st.write(df)
+        else:
+            st.write("Esta planilha não contém os parâmetros necessários para comparação com a NBR 16783.")
+
