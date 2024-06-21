@@ -52,5 +52,5 @@ if uploaded_file is not None:
     df_no_nbr.to_excel('/mnt/data/Parametros_sem_NBR.xlsx', index=False)
 
     st.success('Dados organizados e salvos com sucesso!')
-    st.markdown(f"[Download Parâmetros com NBR](mnt/data/Parametros_com_NBR.xlsx)")
-    st.markdown(f"[Download Parâmetros sem NBR](mnt/data/Parametros_sem_NBR.xlsx)")
+    st.markdown(f"[Download Parâmetros com NBR](Parametros_com_NBR.xlsx)")
+    st.markdown(f"[Download Parâmetros sem NBR](Parametros_sem_NBR.xlsx)")
