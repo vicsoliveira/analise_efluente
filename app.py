@@ -49,7 +49,7 @@ def read_and_organize_data(file):
         df["NBR"] = df.iloc[2, 0]
         df["Amostra"] = df.iloc[3, 1]
 
-        # Remover a primeira linha que foi usada para preencher as colunas acima
+        # Remover as linhas que foram usadas para preencher as colunas acima
         df = df.drop([0, 1, 2, 3]).reset_index(drop=True)
 
         # Tentar converter a coluna 'Coleta' para datetime, tratando possíveis erros
