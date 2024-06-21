@@ -126,5 +126,3 @@ if uploaded_file is not None:
         file_name='dados_processados_efluente.csv',
         mime='text/csv'
     )
-
-    )
