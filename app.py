@@ -1,10 +1,20 @@
 import streamlit as st
 import pandas as pd
+from io import BytesIO
 
 # Função para carregar e processar o arquivo Excel
 def process_excel(file):
     df = pd.read_excel(file, sheet_name=None)
     return df
+
+# Função para criar o botão de download
+def to_excel(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, index=False, sheet_name='Sheet1')
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
 
 # Configuração do Streamlit
 st.title('Análise de Amostras de Efluente')
@@ -47,13 +57,21 @@ if uploaded_file is not None:
         st.subheader('Parâmetros sem comparação NBR 16783')
         st.write(df_no_nbr)
 
-    # Salva os dados organizados em arquivos separados (opcional)
-    df_nbr_path = 'Parametros_com_NBR.xlsx'
-    df_no_nbr_path = 'Parametros_sem_NBR.xlsx'
+    # Cria os arquivos para download
+    if not df_nbr.empty:
+        df_nbr_excel = to_excel(df_nbr)
+        st.download_button(
+            label="Download Parâmetros com NBR",
+            data=df_nbr_excel,
+            file_name='Parametros_com_NBR.xlsx',
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
 
-    df_nbr.to_excel(df_nbr_path, index=False)
-    df_no_nbr.to_excel(df_no_nbr_path, index=False)
-
-    st.success('Dados organizados e salvos com sucesso!')
-    st.markdown(f"[Download Parâmetros com NBR](./{df_nbr_path})")
-    st.markdown(f"[Download Parâmetros sem NBR](./{df_no_nbr_path})")
+    if not df_no_nbr.empty:
+        df_no_nbr_excel = to_excel(df_no_nbr)
+        st.download_button(
+            label="Download Parâmetros sem NBR",
+            data=df_no_nbr_excel,
+            file_name='Parametros_sem_NBR.xlsx',
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
