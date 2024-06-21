@@ -83,7 +83,7 @@ def plot_changes(df):
     colors = [cmap(i) for i in np.linspace(0, 1, len(parameters))]
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    bars = ax.bar(parameters, percentages, color=colors)
+    bars = ax.bar(parameters, percentages, color=colors, edgecolor='black')
 
     for bar, inicial, final in zip(bars, valores_iniciais, valores_finais):
         height = bar.get_height()
@@ -91,12 +91,13 @@ def plot_changes(df):
                     xy=(bar.get_x() + bar.get_width() / 2, height), 
                     xytext=(0, 5),  # 5 points vertical offset
                     textcoords="offset points", 
-                    ha='center', va='bottom', fontsize=10, color='black')
+                    ha='center', va='bottom', fontsize=12, color='black', fontweight='bold')
 
-    plt.xticks(rotation=45, ha='right')
-    plt.ylabel('Mudança (%)')
-    plt.title('Top 10 Mudanças nos Parâmetros (%)')
-    plt.grid(True)
+    plt.xticks(rotation=45, ha='right', fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.ylabel('Mudança (%)', fontsize=14)
+    plt.title('Top 10 Mudanças nos Parâmetros (%)', fontsize=16, fontweight='bold')
+    plt.grid(axis='y', linestyle='--', linewidth=0.7)
     plt.tight_layout()
     st.pyplot(fig)
 
